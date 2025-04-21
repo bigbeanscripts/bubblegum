@@ -140,16 +140,6 @@ AutoBlowToggle:OnChanged(function(value)
     end
 end)
 
-
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
-local player = Players.LocalPlayer
-local sellLocation = workspace.Worlds["The Overworld"].Islands.Twilight.Island.Sell
-local offset = CFrame.new(0, 2, 0)
-
-
-
 -- Toggle and Slider UI
 local AutoSellToggle = SellSection:AddToggle("AutoSell", {
     Title = "Auto Sell Bubbles",
@@ -166,8 +156,11 @@ local SellIntervalSlider = SellSection:AddSlider("SellInterval", {
     Rounding = 1
 })
 
-local sellLocation = workspace.Worlds["The Overworld"].Islands.Twilight.Island.Sell
+local signLocation = workspace.Worlds["The Overworld"].Islands.Twilight.Island.Board.Display
 local offset = CFrame.new(0, 2, 0)
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
@@ -184,8 +177,25 @@ AutoSellToggle:OnChanged(function(value)
                 local root = character:WaitForChild("HumanoidRootPart")
 
                 root.Anchored = true
-                character:PivotTo(sellLocation:GetPivot() * offset)
-                task.wait(3)
+
+                -- Step 1: Go to the sign
+                character:PivotTo(signLocation:GetPivot())
+                task.wait(1)
+
+                -- Step 2: Fire sell bubble event twice
+                local args = {
+                    [1] = "SellBubble"
+                }
+
+                -- Fire the sell event twice
+                pcall(function()
+                    game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                    task.wait(1)  -- Add a slight delay between the two events
+                    game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                end)
+
+                -- Step 3: Wait 3 seconds and then unanchor
+                task.wait(2)
                 root.Anchored = false
 
                 task.wait(interval)
@@ -199,7 +209,6 @@ AutoSellToggle:OnChanged(function(value)
     end
 end)
 
-
 -- Sell When Full Toggle
 local SellWhenFullToggle = SellSection:AddToggle("SellWhenFull", {
     Title = "Sell Bubbles When Full",
@@ -207,6 +216,7 @@ local SellWhenFullToggle = SellSection:AddToggle("SellWhenFull", {
     Default = false
 })
 
+local sellWhenFullLoop = nil
 
 -- Sell When Full check loop
 SellWhenFullToggle:OnChanged(function(value)
@@ -230,15 +240,31 @@ SellWhenFullToggle:OnChanged(function(value)
                         local character = player.Character or player.CharacterAdded:Wait()
                         local root = character:WaitForChild("HumanoidRootPart")
 
-                        -- Anchor, teleport, wait, then unanchor
                         root.Anchored = true
-                        character:PivotTo(sellLocation:GetPivot() * offset)
-                        task.wait(3)
+
+                        -- Step 1: Go to the sign
+                        character:PivotTo(signLocation:GetPivot())
+                        task.wait(1.5)
+
+                        -- Step 2: Fire sell bubble event twice
+                        local args = {
+                            [1] = "SellBubble"
+                        }
+
+                        -- Fire the sell event twice
+                        pcall(function()
+                            game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                            task.wait(0.7)  -- Add a slight delay between the two events
+                            game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                        end)
+
+                        -- Step 3: Wait 3 seconds and then unanchor
+                        task.wait(2)
                         root.Anchored = false
                     end
                 end
 
-                task.wait(0.5)
+                task.wait(1)
             end
         end)
     else
