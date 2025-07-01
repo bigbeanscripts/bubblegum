@@ -1,3 +1,6 @@
+-- BGSI infinity
+
+
 local Library = loadstring(game:HttpGetAsync("https://github.com/ActualMasterOogway/Fluent-Renewed/releases/latest/download/Fluent.luau"))()
 local SaveManager = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/ActualMasterOogway/Fluent-Renewed/master/Addons/SaveManager.luau"))()
 local InterfaceManager = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/ActualMasterOogway/Fluent-Renewed/master/Addons/InterfaceManager.luau"))()
@@ -24,6 +27,7 @@ local Tabs = {
     Chest = Window:AddTab({ Title = "Chests", Icon = "phosphor-treasure-chest" }),  
     Enchant = Window:AddTab({ Title = "Enchant", Icon = "sparkles" }),            
     Teleport = Window:AddTab({ Title = "Teleport", Icon = "map" }),
+    Minigames = Window:AddTab({ Title = "Minigames", Icon = "phosphor-game-controller-bold" }),
     Misc = Window:AddTab({ Title = "Misc", Icon = "puzzle" })
 }
 
@@ -124,7 +128,7 @@ AutoBlowToggle:OnChanged(function(value)
                 
                 -- Fire the remote event
                 pcall(function()
-                    game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                    game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
                 end)
                 
                 -- Wait 2.5 seconds before blowing again
@@ -189,9 +193,9 @@ AutoSellToggle:OnChanged(function(value)
 
                 -- Fire the sell event twice
                 pcall(function()
-                    game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                    game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
                     task.wait(1)  -- Add a slight delay between the two events
-                    game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                    game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
                 end)
 
                 -- Step 3: Wait 3 seconds and then unanchor
@@ -253,9 +257,9 @@ SellWhenFullToggle:OnChanged(function(value)
 
                         -- Fire the sell event twice
                         pcall(function()
-                            game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                            game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
                             task.wait(0.7)  -- Add a slight delay between the two events
-                            game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                            game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
                         end)
 
                         -- Step 3: Wait 3 seconds and then unanchor
@@ -286,7 +290,7 @@ TeleportSection:AddButton({
     Title = "Spawn",
     Description = "Teleport to Spawn",
     Callback = function()
-        local remote = game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event
+        local remote = game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent
         local args = {
             [1] = "Teleport",
             [2] = "Workspace.Worlds.The Overworld.PortalSpawn"
@@ -307,10 +311,54 @@ for _, island in ipairs(islandsPath:GetChildren()) do
         Title = islandName,
         Description = "Teleport to " .. islandName,
         Callback = function()
-            local remote = game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event
+            local remote = game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent
             local args = {
                 [1] = "Teleport",
                 [2] = string.format("Workspace.Worlds.The Overworld.Islands.%s.Island.Portal.Spawn", islandName)
+            }
+
+            remote:FireServer(unpack(args))
+        end
+    })
+end
+
+
+
+-- Reference to the Teleport tab (assumed to already exist)
+local TeleportSection = Tabs.Teleport:AddSection("Miniganme Paradise Islands")
+
+-- Add button to teleport to Spawn
+TeleportSection:AddButton({
+    Title = "Minigame Paradise Spawn",
+    Description = "Teleport to Minigame Paradise Spawn",
+    Callback = function()
+        local remote = game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent
+        local args = {
+        [1] = "Teleport",
+        [2] = "Workspace.Worlds.Minigame Paradise.PortalSpawn"
+        }
+
+        remote:FireServer(unpack(args))
+    end
+})
+
+
+
+-- Path to the islands
+local islandsPath = workspace.Worlds["Minigame Paradise"].Islands
+
+-- Loop through each child (island) and add a teleport button
+for _, island in ipairs(islandsPath:GetChildren()) do
+    local islandName = island.Name
+
+    TeleportSection:AddButton({
+        Title = islandName,
+        Description = "Teleport to " .. islandName,
+        Callback = function()
+            local remote = game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent
+            local args = {
+                [1] = "Teleport",
+                [2] = string.format("Workspace.Worlds.Minigame Paradise.Islands.%s.Island.Portal.Spawn", islandName)
             }
 
             remote:FireServer(unpack(args))
@@ -325,7 +373,7 @@ local TeleportSection2 = Tabs.Misc:AddSection("Unlock all Worlds")
 
 -- Add "Unlock All Worlds" button
 TeleportSection2:AddButton({
-    Title = "Unlock All Worlds",
+    Title = "Unlock All Overworld Islands",
     Description = "Unlocks all worlds instantly and teleports you to the Zen Island.",
     Callback = function()
         local Players = game:GetService("Players")
@@ -373,7 +421,7 @@ TeleportSection2:AddButton({
                     [1] = "Teleport",
                     [2] = "Workspace.Worlds.The Overworld.Islands.Zen.Island.Portal.Spawn"
                 }
-                ReplicatedStorage.Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                ReplicatedStorage.Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
 
                 -- Reset all settings
                 Workspace.Gravity = originalGravity
@@ -411,6 +459,93 @@ TeleportSection2:AddButton({
 })
 
 
+
+-- Add "Unlock All Worlds" button
+TeleportSection2:AddButton({
+    Title = "Unlock All Minigame Paradise Islands",
+    Description = "Unlocks all worlds instantly and teleports you to the Robot Factory Island.",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local UserInputService = game:GetService("UserInputService")
+        local RunService = game:GetService("RunService")
+        local Workspace = game:GetService("Workspace")
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+        local player = Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoid = character:WaitForChild("Humanoid")
+        local rootPart = character:WaitForChild("HumanoidRootPart")
+
+        -- Save original settings to restore later
+        local originalGravity = Workspace.Gravity
+        local originalJumpPower = humanoid.JumpPower
+
+        -- Apply high jump settings
+        Workspace.Gravity = 0
+        humanoid.UseJumpPower = true
+        humanoid.JumpPower = 1000
+
+        -- Enable infinite jump
+        local jumpConnection
+        jumpConnection = UserInputService.JumpRequest:Connect(function()
+            if humanoid and humanoid.Parent then
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end)
+
+        -- Monitor Y position and teleport when Y reaches 15995
+        local monitor
+        monitor = RunService.RenderStepped:Connect(function()
+            local position = rootPart.Position
+
+            -- Teleport when Y reaches 15995
+            if position.Y >= 13200 and position.Y < 13650 then
+                rootPart.CFrame = CFrame.new(position.X, 13500, position.Z)
+            end
+
+            -- Reset settings once above Y = 16000 and teleport the player
+            if position.Y >= 13500 then
+                -- Teleport the player using the FireServer call
+                local args = {
+                    [1] = "Teleport",
+                    [2] = "Workspace.Worlds.Minigame Paradise.Islands.Robot Factory.Island.Portal.Spawn"
+                }
+                ReplicatedStorage.Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
+
+                -- Reset all settings
+                Workspace.Gravity = originalGravity
+                humanoid.JumpPower = originalJumpPower
+
+                if jumpConnection then
+                    jumpConnection:Disconnect()
+                end
+                if monitor then
+                    monitor:Disconnect()
+                end
+            end
+        end)
+
+        -- Simulate jumping every second
+        local jumpSimulateConnection
+        jumpSimulateConnection = RunService.Heartbeat:Connect(function()
+            -- Make the player jump every second
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end)
+
+        -- Disconnect the simulated jump after the player crosses Y = 16000
+        local stopJumpingConnection
+        stopJumpingConnection = RunService.RenderStepped:Connect(function()
+            if rootPart.Position.Y >= 13500 then
+                if jumpSimulateConnection then
+                    jumpSimulateConnection:Disconnect()
+                end
+                if stopJumpingConnection then
+                    stopJumpingConnection:Disconnect()
+                end
+            end
+        end)
+    end
+})
 
 
 -- Add Auto Buy section to the Main tab
@@ -531,7 +666,7 @@ BuyBestGumToggle:OnChanged(function(value)
 
                         pcall(function()
                             -- Fire the remote event to purchase the gum
-                            game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                            game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
 
                         end)
                     end
@@ -666,7 +801,7 @@ BuyBestFlavorsToggle:OnChanged(function(value)
 
                         pcall(function()
                             -- Fire the remote event to purchase the flavor
-                            game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                            game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
 
                         end)
                     end
@@ -739,7 +874,7 @@ AutoUpgradeMasteriesToggle:OnChanged(function(state)
                         }
 
                         pcall(function()
-                            game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                            game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
                         end)
 
                         task.wait(0.2)
@@ -829,7 +964,7 @@ AutoCraftToggle:OnChanged(function(value)
                         }
                         
                         pcall(function()
-                            game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                            game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
                         end)
                         
                         -- Small delay between each craft to prevent overloading
@@ -876,7 +1011,7 @@ CraftAllPotionsToggle:OnChanged(function(value)
                     }
                     
                     pcall(function()
-                        game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                        game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
                     end)
                     
                     -- Small delay between each craft to prevent overloading
@@ -977,7 +1112,7 @@ AutoHatchToggle:OnChanged(function(value)
                 
                 -- Fire the remote event
                 pcall(function()
-                    game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                    game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
                 end)
                 
                 task.wait(0.5) -- Wait before hatching again
@@ -1012,24 +1147,15 @@ EggsSection:AddButton({
 
 
 
-
 -- Add Gold/Rift Chest section to the Rift tab
 local RiftChestSection = Tabs.Chest:AddSection("Rift Chests")
 
-local Note1 = RiftChestSection:Paragraph("Paragraph", {
-    Title = "Note!",
-    Content = "If both toggles are enabled, it might break. Please only use one at a time."
-})
 
--- Util references
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Debris = game:GetService("Debris")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- Toggles and loops
 local autoGoldChestLoop, goldChestClaimLoop = nil, nil
 local autoRiftChestLoop, royalChestClaimLoop = nil, nil
+local autoDiceChestLoop, diceChestClaimLoop = nil, nil
 
 -- References for cleanup
 local createdBlocks = {}
@@ -1047,35 +1173,66 @@ local function setupAutoChest(toggle, chestName, platformName)
                 while toggle.Value do
                     local args = { [1] = "UnlockRiftChest", [2] = chestName }
                     pcall(function()
-                        ReplicatedStorage.Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                        game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
                     end)
                     task.wait(1)
                 end
             end)
 
-            -- Store reference
+            -- Store reference based on chest type
             if chestName == "golden-chest" then
                 goldChestClaimLoop = chestClaimLoop
-            else
+            elseif chestName == "royal-chest" then
                 royalChestClaimLoop = chestClaimLoop
+            elseif chestName == "dice-chest" then
+                diceChestClaimLoop = chestClaimLoop
             end
 
             -- Teleport + walk loop
             local chestTeleportLoop = task.spawn(function()
                 while toggle.Value do
-                    local player = Players.LocalPlayer
+                    local player = game:GetService("Players").LocalPlayer
                     local character = player.Character or player.CharacterAdded:Wait()
                     local humanoid = character:WaitForChild("Humanoid")
                     local rootPart = character:WaitForChild("HumanoidRootPart")
 
-                    -- Locate chest
+                    -- First check if the specified chest exists
+                    local chestExists = workspace.Rendered.Rifts:FindFirstChild(chestName) ~= nil
+                    
+                    if not chestExists then
+                        -- If chest doesn't exist, wait and check again
+                        task.wait(15)
+                        continue
+                    end
+                                        
+                    -- Now that we know the chest exists, teleport to the appropriate world
+                    local remote = game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent
+                    local args
+
+                    if chestName == "dice-chest" then
+                        -- For Dice Chest, teleport to Minigame Paradise
+                        args = {
+                            [1] = "Teleport",
+                            [2] = "Workspace.Worlds.Minigame Paradise.PortalSpawn"
+                        }
+                    else
+                        -- For Golden/Royal Chest, teleport to Overworld
+                        args = {
+                            [1] = "Teleport",
+                            [2] = "Workspace.Worlds.The Overworld.PortalSpawn"
+                        }
+                    end
+
+                    remote:FireServer(unpack(args))
+                    task.wait(2)
+
+                    -- Locate chest again after teleporting
                     local targetPart
                     local success = pcall(function()
                         targetPart = workspace.Rendered.Rifts[chestName].Chest.Inner
                     end)
 
                     if not success or not targetPart then
-                        warn(chestName .. " not found. Retrying in 15 seconds...")
                         task.wait(15)
                         continue
                     end
@@ -1104,7 +1261,7 @@ local function setupAutoChest(toggle, chestName, platformName)
                     spawnBlock.Name = "SpawnBlock"
                     spawnBlock.Parent = workspace
                     table.insert(createdBlocks, spawnBlock)
-                    Debris:AddItem(spawnBlock, 5)
+                    game:GetService("Debris"):AddItem(spawnBlock, 5)
 
                     -- Teleport 1 stud above spawn block
                     rootPart.CFrame = CFrame.new(spawnBlock.Position + Vector3.new(0, 1, 0))
@@ -1128,7 +1285,7 @@ local function setupAutoChest(toggle, chestName, platformName)
                     -- Create continuous platform under player while walking
                     local isWalking = true
                     local lastBlockTime = 0
-                    local walkConnection = RunService.Heartbeat:Connect(function()
+                    local walkConnection = game:GetService("RunService").Heartbeat:Connect(function()
                         if not toggle.Value then
                             -- Toggle turned off - clean up immediately
                             isWalking = false
@@ -1228,30 +1385,34 @@ local function setupAutoChest(toggle, chestName, platformName)
                         end
                     end
                     
-                    
                     -- No waiting between cycles - immediately continue with next loop iteration
                 end
             end)
 
-            -- Store reference
+            -- Store reference based on chest type
             if chestName == "golden-chest" then
                 autoGoldChestLoop = chestTeleportLoop
-            else
+            elseif chestName == "royal-chest" then
                 autoRiftChestLoop = chestTeleportLoop
+            elseif chestName == "dice-chest" then
+                autoDiceChestLoop = chestTeleportLoop
             end
 
         else
-            -- Cancel loops
+            -- Cancel loops based on chest type
             if chestName == "golden-chest" then
                 if autoGoldChestLoop then task.cancel(autoGoldChestLoop) autoGoldChestLoop = nil end
                 if goldChestClaimLoop then task.cancel(goldChestClaimLoop) goldChestClaimLoop = nil end
-            else
+            elseif chestName == "royal-chest" then
                 if autoRiftChestLoop then task.cancel(autoRiftChestLoop) autoRiftChestLoop = nil end
                 if royalChestClaimLoop then task.cancel(royalChestClaimLoop) royalChestClaimLoop = nil end
+            elseif chestName == "dice-chest" then
+                if autoDiceChestLoop then task.cancel(autoDiceChestLoop) autoDiceChestLoop = nil end
+                if diceChestClaimLoop then task.cancel(diceChestClaimLoop) diceChestClaimLoop = nil end
             end
 
             -- Restore collisions for character parts
-            local player = Players.LocalPlayer
+            local player = game:GetService("Players").LocalPlayer
             local character = player.Character
             if character then
                 for part, canCollide in pairs(origCanCollide) do
@@ -1295,16 +1456,26 @@ local AutoRiftChestToggle = RiftChestSection:AddToggle("AutoRiftChest", {
     Default = false
 })
 
--- Apply logic
+-- Add Dice Chest toggle
+local AutoDiceChestToggle = RiftChestSection:AddToggle("AutoDiceChest", {
+    Title = "Auto Dice Chest",
+    Description = "This will check for Dice Chest and teleport to the correct world if found",
+    Default = false
+})
+
+-- Apply logic to all chest toggles
 setupAutoChest(AutoGoldChestToggle, "golden-chest", "GoldChestPlatform")
 setupAutoChest(AutoRiftChestToggle, "royal-chest", "RoyalChestPlatform")
+setupAutoChest(AutoDiceChestToggle, "dice-chest", "DiceChestPlatform")
+
+
+
+
 
 local RegularChestSection = Tabs.Chest:AddSection("Regular Chests")
 
-
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RemoteEvent = ReplicatedStorage.Shared.Framework.Network.Remote.Event
+local RemoteEvent = ReplicatedStorage.Shared.Framework.Network.Remote.RemoteEvent
 
 -- Chest claim function
 local function startAutoChest(name, toggle)
@@ -1335,8 +1506,6 @@ local function startAutoChest(name, toggle)
     end)
 end
 
-
-
 -- UI toggles
 local AutoGiantChestToggle = RegularChestSection:AddToggle("AutoGiantChest", {
     Title = "Auto Giant Chest",
@@ -1356,12 +1525,17 @@ local AutoVoidChestToggle = RegularChestSection:AddToggle("AutoVoidChest", {
     Default = false
 })
 
+local AutoTicketChestToggle = RegularChestSection:AddToggle("AutoTicketChest", {
+    Title = "Auto Ticket Chest",
+    Description = "Claims the Ticket Chest Automatically",
+    Default = false
+})
+
 -- Attach logic
 startAutoChest("Giant Chest", AutoGiantChestToggle)
 startAutoChest("Infinity Chest", AutoInfinityChestToggle)
 startAutoChest("Void Chest", AutoVoidChestToggle)
-
-
+startAutoChest("Ticket Chest", AutoTicketChestToggle)
 
 
 
@@ -1658,6 +1832,7 @@ end
 local AutoRiftEggsDropdown = AutoRiftSection:AddDropdown("AutoRiftEggs", {
     Title = "Select Rift Eggs",
     Description = "Choose which rift eggs to automatically hatch",
+    Searchable = true,  
     Values = getRiftEggFiltered(),
     Multi = true,
     Default = {},
@@ -1669,6 +1844,13 @@ local AutoRiftLuckDropdown = AutoRiftSection:AddDropdown("AutoRiftLuck", {
     Description = "Only go to the selected rift if the luck is equal to, or above what is choosen in this dropdown.",
     Values = {"5", "10", "15", "20", "25"},
     Default = "5"
+})
+
+-- Add toggle for auto detecting and collecting rifts
+local AutoDetectRiftToggle = AutoRiftSection:AddToggle("AutoDetectRift", {
+    Title = "Auto Detect and Go To Rifts",
+    Description = "Automatically detects rifts with the selected eggs and the luck, and starts hatching them. If the secret Silly egg is available, it will always prioritize it.",
+    Default = false
 })
 
 -- Add teleport to Zen and hatch toggle
@@ -1762,7 +1944,7 @@ local function teleportToZen()
         [1] = "Teleport",
         [2] = "Workspace.Worlds.The Overworld.Islands.Zen.Island.Portal.Spawn"
     }
-    game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+    game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
 end
 
 -- Function to find a suitable rift
@@ -1775,7 +1957,7 @@ local function findSuitableRift()
 
         -- First check for Aura eggs
         for _, eggName in pairs(selectedEggs) do
-            if string.find(string.lower(eggName), "aura") then
+            if string.find(string.lower(eggName), "silly") then
                 local eggInfo = findBestEggInstance(eggName)
                 if eggInfo and eggInfo.luck >= minimumLuck then
                     targetEgg = eggInfo
@@ -1799,12 +1981,7 @@ local function findSuitableRift()
     return targetEgg
 end
 
--- Add toggle for auto detecting and collecting rifts
-local AutoDetectRiftToggle = AutoRiftSection:AddToggle("AutoDetectRift", {
-    Title = "Auto Detect and Go To Rifts",
-    Description = "Automatically detects rifts with the selected eggs and the luck, and starts hatching them. If the secret Aura egg is available, it will always prioritize it.",
-    Default = false
-})
+
 
 -- Variables for auto rift functionality
 local autoDetectRiftLoop = nil
@@ -1832,7 +2009,7 @@ local function startRainbowEggHatchLoop()
             
             -- Hatch Rainbow Eggs
             pcall(function()
-                game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer("HatchEgg", "Rainbow Egg", 100)
+                game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer("HatchEgg", "Rainbow Egg", 100)
             end)
             
             -- Wait a bit before next hatch
@@ -1875,7 +2052,7 @@ local function startHatchingLoop()
             if currentRiftName then
                 local eggName = convertRiftNameToEggName(currentRiftName)
                 pcall(function()
-                    game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer("HatchEgg", eggName, 100)
+                    game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer("HatchEgg", eggName, 100)
                 end)
             end
             task.wait(1)
@@ -1971,9 +2148,6 @@ AutoDetectRiftToggle:OnChanged(function(value)
 end)
 
 
-
-
-
 -- Enchant Pets Section
 local PetEnchantSection = Tabs.Enchant:AddSection("Enchant Pets")
 
@@ -2009,7 +2183,8 @@ local function getPetsList()
                 local enchantStr = (#enchantList > 0) and (" | " .. table.concat(enchantList, ", ")) or " | No Enchant"
                 local displayName = petName .. enchantStr .. " | ID: " .. pet.Id
 
-                petsList[#petsList + 1] = displayName
+                -- Always add pet to list even if name is duplicate (will have different IDs)
+                table.insert(petsList, displayName)
                 petValues[displayName] = {
                     id = pet.Id,
                     name = petName,
@@ -2030,6 +2205,7 @@ local PetSelector = PetEnchantSection:AddDropdown("PetSelector", {
     Title = "Select Pet(s)",
     Description = "Choose which pets to enchant",
     Values = petsList,
+    Searchable = true,
     Multi = true,
     Default = {}
 })
@@ -2087,6 +2263,7 @@ local EnchantSelector = PetEnchantSection:AddDropdown("EnchantSelector", {
     Title = "Select Enchant(s)",
     Description = "Select the enchantments you want to keep.",
     Values = enchantOptions,
+    Searchable = true,
     Multi = true,
     Default = {}
 })
@@ -2142,7 +2319,7 @@ AutoRollEnchantToggle:OnChanged(function(active)
                         pcall(function()
                             game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Function:InvokeServer(unpack(args))
                         end)
-                        task.wait(0.4)
+                        task.wait(0.5)
                     else
                         -- Check each enchant slot
                         local allCorrect = true
@@ -2163,20 +2340,27 @@ AutoRollEnchantToggle:OnChanged(function(active)
                             end
                         end
 
+                        -- If pet has 2 enchant slots and both are incorrect, use full reroll with gems
+                        if enchantCount == 2 and #wrongSlots == 2 then
+                            local args = { "RerollEnchants", pet.id }
+                            pcall(function()
+                                game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Function:InvokeServer(unpack(args))
+                            end)
+                            task.wait(0.5)
                         -- Special case: If there's only one enchant and UseOrbToggle is on
-                        if enchantCount == 1 and #wrongSlots == 1 and UseOrbToggle.Value then
+                        elseif enchantCount == 1 and #wrongSlots == 1 and UseOrbToggle.Value then
                             local args = {
                                 "RerollEnchant",
                                 pet.id,
                                 1  -- First slot
                             }
                             pcall(function()
-                                game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                                game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
                             end)
-                            task.wait(0.4)
+                            task.wait(0.5)
                         else
-                            -- Reroll individual incorrect slots (orb)
-                            if #wrongSlots > 0 then
+                            -- If only some enchants are wrong, reroll individual incorrect slots (orb)
+                            if #wrongSlots > 0 and #wrongSlots < enchantCount then
                                 for _, slotIndex in ipairs(wrongSlots) do
                                     local args = {
                                         "RerollEnchant",
@@ -2184,28 +2368,25 @@ AutoRollEnchantToggle:OnChanged(function(active)
                                         slotIndex
                                     }
                                     pcall(function()
-                                        game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                                        game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
                                     end)
-                                    task.wait(0.4)
+                                    task.wait(0.5)
                                 end
-                            end
-
-                            -- If all are wrong, do a full reroll (gems)
-                            -- But skip this if we just used orbs for a single-enchant pet
-                            if not allCorrect and #wrongSlots == enchantCount and not (enchantCount == 1 and UseOrbToggle.Value) then
+                            -- If all are wrong (but not handled by the 2-slot case above), do a full reroll (gems)
+                            elseif not allCorrect and #wrongSlots == enchantCount and not (enchantCount == 1 and UseOrbToggle.Value) then
                                 local args = { "RerollEnchants", pet.id }
                                 pcall(function()
                                     game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Function:InvokeServer(unpack(args))
                                 end)
-                                task.wait(0.4)
+                                task.wait(0.5)
                             end
                         end
                     end
 
-                    task.wait(0.3)  -- Wait between processing pets
+                    task.wait(0.5)  -- Wait between processing pets
                 end
 
-                task.wait(0.75)  -- Wait between rounds of checking
+                task.wait(0.25)  -- Wait between rounds of checking
             end
         end)
     elseif autoRollEnchantLoop then
@@ -2214,230 +2395,165 @@ AutoRollEnchantToggle:OnChanged(function(active)
     end
 end)
 
--- Add Auto Collect section to the Misc tab
-local AutoCollectSection = Tabs.Misc:AddSection("Auto Collect")
 
--- Add a toggle that collects pickups in your current zone
-local AutoCollectToggle = AutoCollectSection:AddToggle("AutoCollectPickups", {
-    Title = "Collect Pickups In Zone",
-    Description = "Always collects the pickups in your zone (without teleporting).",
+
+-- Add Minigames Auto Play Section
+local MinigamesSection = Tabs.Minigames:AddSection("Auto Play")
+
+-- Add difficulty dropdown to the Minigames section
+local DifficultyDropdown = MinigamesSection:AddDropdown("DifficultyDropdown", {
+    Title = "Select Difficulty",
+    Description = "Choose which difficulty level to play minigames at",
+    Values = {"Easy", "Medium", "Hard", "Insane"},
+    Multi = false,
+    Default = "Insane"
+})
+
+-- Auto Claw Machine Toggle
+local AutoClawToggle = MinigamesSection:AddToggle("AutoClawToggle", {
+    Title = "Auto Claw Machine",
+    Description = "Automatically plays and completes the Robot Claw minigame",
     Default = false
 })
 
--- Hook the pickup range function to allow server-side validation to pass
-local StatsUtil = nil
-for _, module in pairs(getgc(true)) do
-    if typeof(module) == "table" and rawget(module, "GetPickupRange") then
-        StatsUtil = module
-        break
-    end
-end
-
--- Store the original function (if needed later)
-local rangeValue = 10
-if StatsUtil then
-    StatsUtil.GetPickupRange = function(...)
-        return rangeValue
-    end
-end
-
--- Variable to store the auto collect loop
-local autoCollectLoop = nil
-
--- Set up toggle functionality
-AutoCollectToggle:OnChanged(function(value)
+AutoClawToggle:OnChanged(function(value)
     if value then
-        rangeValue = 999999999999
-        -- Start auto collecting pickups
-        autoCollectLoop = task.spawn(function()
-            while AutoCollectToggle.Value do
-                -- Run the pickup collection continuously while enabled
-                local renderedPath = workspace.Rendered:GetChildren()[14]
-                if renderedPath then
-                    local children = renderedPath:GetChildren()
-                    for _, child in ipairs(children) do
-                        local args = {
-                            [1] = child.Name
-                        }
-                        pcall(function()
-                            game:GetService("ReplicatedStorage").Remotes.Pickups.CollectPickup:FireServer(unpack(args))
-                        end)
-                        task.wait(0.1)
-                    end
-                end
-
-                -- Wait a bit before checking for more pickups
-                task.wait(1)
-            end
-        end)
-    else
-        rangeValue = 10
-        -- Stop auto collecting
-        if autoCollectLoop then
-            task.cancel(autoCollectLoop)
-            autoCollectLoop = nil
-        end
-    end
-end)
-
-
--- Add toggle for auto teleporting to each zone quickly
-local AutoZoneTeleportToggle = AutoCollectSection:AddToggle("AutoZoneTeleport", {
-    Title = "Teleport to Each Zone Quickly",
-    Description = "Automatically cycles through the zones, to collect all pickups -- Better to just stay in Zen though.",
-    Default = false
-})
-
--- Variable to store the auto teleport loop
-local autoZoneTeleportLoop = nil
-
--- Set up toggle functionality
-AutoZoneTeleportToggle:OnChanged(function(value)
-    if value then
-        -- Start auto teleporting through zones
-        autoZoneTeleportLoop = spawn(function()
-            while AutoZoneTeleportToggle.Value do
-                -- List of key islands to visit
-                local importantIslands = {
-                    "Zen",
-                    "The Void", 
-                    "Twilight",
-                    "Outer Space",
-                    "Floating Island"
-                }
+        -- Start the auto-collection loop when enabled
+        spawn(function()
+            while AutoClawToggle.Value do
+                -- Get selected difficulty
+                local difficulty = DifficultyDropdown.Value
                 
-                -- Cycle through each island
-                for _, islandName in ipairs(importantIslands) do
-                    -- Break out of loop if toggle was disabled
-                    if not AutoZoneTeleportToggle.Value then
-                        break
-                    end
-                    
-                    -- Teleport to the island
-                    local args = {
-                        [1] = "Teleport",
-                        [2] = "Workspace.Worlds.The Overworld.Islands." .. islandName .. ".Island.Portal.Spawn"
-                    }
-                    
-                    pcall(function()
-                        game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
-                    end)
-                    
-                    -- Wait 0.5 seconds before next teleport
-                    task.wait(1.5)
-                end
-            end
-        end)
-    else
-        -- Stop auto teleporting
-        if autoZoneTeleportLoop then
-            autoZoneTeleportLoop:Cancel()
-            autoZoneTeleportLoop = nil
-        end
-    end
-end)
-
-
-
--- Add Auto Buy Shop section to the Misc tab
-local AutoBuyShopSection = Tabs.Misc:AddSection("Auto Buy Shop")
-
--- Add Shop Type multi-dropdown
-local ShopTypeDropdown = AutoBuyShopSection:AddDropdown("ShopTypeSelector", {
-    Title = "Select Shop",
-    Description = "Choose which shops to auto-buy from",
-    Values = {"Blackmarket", "Alien Shop"},
-    Multi = true,
-    Default = {}
-})
-
--- Add Shop Item number multi-dropdown
-local ShopItemDropdown = AutoBuyShopSection:AddDropdown("ShopItemSelector", {
-    Title = "Select Items",
-    Description = "Choose which items to buy (bby slot numbers)",
-    Values = {"1", "2", "3"},
-    Multi = true,
-    Default = {}
-})
-
--- Add toggle for auto buying
-local AutoBuyShopToggle = AutoBuyShopSection:AddToggle("AutoBuyShopToggle", {
-    Title = "Auto Buy Shop Items",
-    Description = "Automatically buys selected items",
-    Default = false
-})
-
--- Variable to store the auto buy loop
-local autoBuyShopLoop = nil
-
--- Set up toggle functionality
-AutoBuyShopToggle:OnChanged(function(value)
-    if value then
-        -- Start auto buying from shops
-        autoBuyShopLoop = spawn(function()
-            while AutoBuyShopToggle.Value do
-                -- Get selected shops and items
-                local selectedShops = {}
-                local selectedItems = {}
+                -- Robot Claw auto collector code
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local Remote = require(ReplicatedStorage.Shared.Framework.Network.Remote)
                 
-                -- Extract selected shops
-                for shopName, isSelected in pairs(ShopTypeDropdown.Value) do
-                    if isSelected then
-                        table.insert(selectedShops, shopName)
-                    end
+                -- Find the claw machine
+                local clawMachine = workspace:FindFirstChild("ClawMachine")
+                if not clawMachine then
+                    -- Start minigame with selected difficulty
+                    Remote:FireServer("StartMinigame", "Robot Claw", difficulty)
+                    wait(1) -- Wait for initialization
                 end
                 
-                -- Extract selected items
-                for itemNumber, isSelected in pairs(ShopItemDropdown.Value) do
-                    if isSelected then
-                        table.insert(selectedItems, tonumber(itemNumber))
-                    end
-                end
-                
-                -- Buy items from each selected shop
-                for _, shopName in ipairs(selectedShops) do
-                    -- Determine shop ID based on selected shop name
-                    local shopId = ""
-                    if shopName == "Blackmarket" then
-                        shopId = "shard-shop"
-                    elseif shopName == "Alien Shop" then
-                        shopId = "alien-shop"
-                    end
+                -- Find and collect all items
+                clawMachine = workspace:FindFirstChild("ClawMachine")
+                if clawMachine then
+                    local toyModels = {}
                     
-                    -- Buy each selected item
-                    for _, itemNumber in ipairs(selectedItems) do
-                        -- Buy item 15 times
-                        for i = 1, 15 do
-                            local args = {
-                                [1] = "BuyShopItem",
-                                [2] = shopId,
-                                [3] = itemNumber
-                            }
-                            
-                            pcall(function()
-                                game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
-                            end)
-                            
-                            -- Small delay between purchases
-                            task.wait(0.1)
+                    -- Find all toys
+                    for _, item in pairs(clawMachine:GetDescendants()) do
+                        if item:HasTag("ClawToyModel") or item:GetAttribute("ItemGUID") then
+                            table.insert(toyModels, item)
                         end
                     end
+                    
+                    -- Collect all toys
+                    for _, toyModel in pairs(toyModels) do
+                        local itemGUID = toyModel:GetAttribute("ItemGUID")
+                        if itemGUID and not toyModel:GetAttribute("wasCollected") then
+                            -- Collect the item
+                            Remote:FireServer("GrabMinigameItem", itemGUID)
+                            toyModel:SetAttribute("wasCollected", true)
+                            wait(0.05)
+                        end
+                    end
+                    
+                    -- Finish minigame
+                    wait(0.5)
+                    Remote:FireServer("FinishMinigame")
                 end
                 
-                -- Wait 5 minutes and 5 seconds (305 seconds) before buying again
-                task.wait(310)
+                wait(2) -- Wait before next attempt
             end
         end)
-    else
-        -- Stop auto buying
-        if autoBuyShopLoop then
-            autoBuyShopLoop:Cancel()
-            autoBuyShopLoop = nil
-        end
     end
 end)
+
+-- Auto Cart Escape Toggle
+local AutoCartToggle = MinigamesSection:AddToggle("AutoCartToggle", {
+    Title = "Auto Cart Escape",
+    Description = "Automatically plays and completes the Cart Escape minigame",
+    Default = false
+})
+
+AutoCartToggle:OnChanged(function(value)
+    if value then
+        -- Start the auto-completion loop
+        spawn(function()
+            while AutoCartToggle.Value do
+                -- Get selected difficulty
+                local difficulty = DifficultyDropdown.Value
+                
+                -- Cart Escape auto completion code
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local Remote = require(ReplicatedStorage.Shared.Framework.Network.Remote)
+                
+                -- Start minigame if not already running
+                local minecartExists = workspace:FindFirstChild("Minecart") ~= nil
+                local railroadExists = workspace:FindFirstChild("Railroad") ~= nil
+                
+                if not minecartExists and not railroadExists then
+                    Remote:FireServer("StartMinigame", "Cart Escape", difficulty)
+                    wait(1)
+                end
+                
+                -- Pass all stages
+                for i = 1, 10 do
+                    Remote:FireServer("PassStage", i)
+                    wait(0.2)
+                end
+                
+                -- Complete the minigame
+                Remote:FireServer("FinishMinigame", {
+                    Success = true,
+                    StagesCompleted = 9
+                })
+                
+                wait(2) -- Wait before next attempt
+            end
+        end)
+    end
+end)
+
+-- Auto Pet Match Toggle
+local AutoPetMatchToggle = MinigamesSection:AddToggle("AutoPetMatchToggle", {
+    Title = "Auto Pet Match",
+    Description = "Automatically plays and completes the Pet Match minigame",
+    Default = false
+})
+
+AutoPetMatchToggle:OnChanged(function(value)
+    if value then
+        -- Start the auto-completion loop
+        spawn(function()
+            while AutoPetMatchToggle.Value do
+                -- Get selected difficulty
+                local difficulty = DifficultyDropdown.Value
+                
+                -- Pet Match auto completion code
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local Remote = require(ReplicatedStorage.Shared.Framework.Network.Remote)
+                
+                -- Start minigame with selected difficulty
+                Remote:FireServer("StartMinigame", "Pet Match", difficulty)
+                
+                -- Wait for minigame to initialize
+                wait(1.5)
+                
+                -- Send completion event directly
+                Remote:FireServer("FinishMinigame")
+                
+                wait(2) -- Wait before next attempt
+            end
+        end)
+    end
+end)
+
+
+
 -- Add Doggy Jump section to the Misc tab
-local DoggyJumpSection = Tabs.Misc:AddSection("Doggy Jump")
+local DoggyJumpSection = Tabs.Minigames:AddSection("Doggy Jump")
 
 
 -- Add Auto Doggy Jump toggle
@@ -2519,6 +2635,216 @@ DoggyJumpSection:AddButton({
     end
 })
 
+-- Add Skip Cooldown Section
+local CooldownSection = Tabs.Minigames:AddSection("Skip Cooldown")
+
+-- Multi-dropdown for selecting minigames
+local CooldownDropdown = CooldownSection:AddDropdown("CooldownDropdown", {
+    Title = "Select Minigames",
+    Description = "Select which minigames to skip cooldown for",
+    Values = {"Robot Claw", "Cart Escape", "Pet Match"},
+    Multi = true,
+    Default = {}
+})
+
+-- Auto Skip Cooldown Toggle
+local SkipCooldownToggle = CooldownSection:AddToggle("SkipCooldownToggle", {
+    Title = "Auto Skip Cooldown",
+    Description = "Automatically skips the cooldown for selected minigames",
+    Default = false
+})
+
+SkipCooldownToggle:OnChanged(function(value)
+    if value then
+        -- Start the cooldown skip loop
+        spawn(function()
+            while SkipCooldownToggle.Value do
+                -- Skip cooldown for each selected minigame
+                for minigame, isSelected in pairs(CooldownDropdown.Value) do
+                    if isSelected then
+                        local args = {
+                            [1] = "SkipMinigameCooldown",
+                            [2] = minigame
+                        }
+                        
+                        game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
+                    end
+                end
+                
+                wait(1.5) -- Run every 2 seconds
+            end
+        end)
+    end
+end)
+
+
+
+-- Add Auto Collect section to the Misc tab
+local AutoCollectSection = Tabs.Misc:AddSection("Auto Collect")
+
+-- Add a toggle that collects pickups in your current zone
+local AutoCollectToggle = AutoCollectSection:AddToggle("AutoCollectPickups", {
+    Title = "Collect Pickups In Zone",
+    Description = "Always collects the pickups in your zone (without teleporting).",
+    Default = false
+})
+
+-- Hook the pickup range function to allow server-side validation to pass
+local StatsUtil = nil
+for _, module in pairs(getgc(true)) do
+    if typeof(module) == "table" and rawget(module, "GetPickupRange") then
+        StatsUtil = module
+        break
+    end
+end
+
+-- Store the original function (if needed later)
+local rangeValue = 10
+if StatsUtil then
+    StatsUtil.GetPickupRange = function(...)
+        return rangeValue
+    end
+end
+
+-- Variable to store the auto collect loop
+local autoCollectLoop = nil
+
+-- Set up toggle functionality
+AutoCollectToggle:OnChanged(function(value)
+    if value then
+        rangeValue = 999999999999
+        -- Start auto collecting pickups
+        autoCollectLoop = task.spawn(function()
+            while AutoCollectToggle.Value do
+                -- Run the pickup collection continuously while enabled
+                local renderedPath = workspace.Rendered:GetChildren()[13]
+                if renderedPath then
+                    local children = renderedPath:GetChildren()
+                    for _, child in ipairs(children) do
+                        local args = {
+                            [1] = child.Name
+                        }
+                        pcall(function()
+                            game:GetService("ReplicatedStorage").Remotes.Pickups.CollectPickup:FireServer(unpack(args))
+                        end)
+                        task.wait(0.1)
+                    end
+                end
+
+                -- Wait a bit before checking for more pickups
+                task.wait(1)
+            end
+        end)
+        
+    else
+        rangeValue = 10
+        -- Stop auto collecting
+        if autoCollectLoop then
+            task.cancel(autoCollectLoop)
+            autoCollectLoop = nil
+        end
+    end
+end)
+
+
+-- Add Auto Buy Shop section to the Misc tab
+local AutoBuyShopSection = Tabs.Misc:AddSection("Auto Buy Shop")
+
+-- Add Shop Type multi-dropdown
+local ShopTypeDropdown = AutoBuyShopSection:AddDropdown("ShopTypeSelector", {
+    Title = "Select Shop",
+    Description = "Choose which shops to auto-buy from",
+    Values = {"Blackmarket", "Alien Shop"},
+    Multi = true,
+    Default = {}
+})
+
+-- Add Shop Item number multi-dropdown
+local ShopItemDropdown = AutoBuyShopSection:AddDropdown("ShopItemSelector", {
+    Title = "Select Items",
+    Description = "Choose which items to buy (bby slot numbers)",
+    Values = {"1", "2", "3"},
+    Multi = true,
+    Default = {}
+})
+
+-- Add toggle for auto buying
+local AutoBuyShopToggle = AutoBuyShopSection:AddToggle("AutoBuyShopToggle", {
+    Title = "Auto Buy Shop Items",
+    Description = "Automatically buys selected items",
+    Default = false
+})
+
+-- Variable to store the auto buy loop
+local autoBuyShopLoop = nil
+
+-- Set up toggle functionality
+AutoBuyShopToggle:OnChanged(function(value)
+    if value then
+        -- Start auto buying from shops
+        autoBuyShopLoop = spawn(function()
+            while AutoBuyShopToggle.Value do
+                -- Get selected shops and items
+                local selectedShops = {}
+                local selectedItems = {}
+                
+                -- Extract selected shops
+                for shopName, isSelected in pairs(ShopTypeDropdown.Value) do
+                    if isSelected then
+                        table.insert(selectedShops, shopName)
+                    end
+                end
+                
+                -- Extract selected items
+                for itemNumber, isSelected in pairs(ShopItemDropdown.Value) do
+                    if isSelected then
+                        table.insert(selectedItems, tonumber(itemNumber))
+                    end
+                end
+                
+                -- Buy items from each selected shop
+                for _, shopName in ipairs(selectedShops) do
+                    -- Determine shop ID based on selected shop name
+                    local shopId = ""
+                    if shopName == "Blackmarket" then
+                        shopId = "shard-shop"
+                    elseif shopName == "Alien Shop" then
+                        shopId = "alien-shop"
+                    end
+                    
+                    -- Buy each selected item
+                    for _, itemNumber in ipairs(selectedItems) do
+                        -- Buy item 15 times
+                        for i = 1, 15 do
+                            local args = {
+                                [1] = "BuyShopItem",
+                                [2] = shopId,
+                                [3] = itemNumber
+                            }
+                            
+                            pcall(function()
+                                game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
+                            end)
+                            
+                            -- Small delay between purchases
+                            task.wait(0.1)
+                        end
+                    end
+                end
+                
+                -- Wait 5 minutes and 5 seconds (305 seconds) before buying again
+                task.wait(310)
+            end
+        end)
+    else
+        -- Stop auto buying
+        if autoBuyShopLoop then
+            autoBuyShopLoop:Cancel()
+            autoBuyShopLoop = nil
+        end
+    end
+end)
+
 -- Add Auto Claim Playtime Gifts section to the Misc tab
 local PlaytimeSection = Tabs.Misc:AddSection("Auto Claim")
 
@@ -2531,42 +2857,31 @@ local AutoClaimPlaytimeToggle = PlaytimeSection:AddToggle("AutoClaimPlaytime", {
 
 -- Variable to store the auto claim loop
 local autoClaimPlaytimeLoop = nil
-
--- Set up toggle functionality
 AutoClaimPlaytimeToggle:OnChanged(function(value)
     if value then
         -- Start auto claiming playtime rewards
-        autoClaimPlaytimeLoop = spawn(function()
+        autoClaimPlaytimeLoop = task.spawn(function()
             while AutoClaimPlaytimeToggle.Value do
-                -- Claim all playtime rewards (1-9)
-                for rewardIndex = 1, 9 do
-                    -- Prepare arguments for claiming playtime reward
-                    local args = {
-                        [1] = "ClaimPlaytime",
-                        [2] = rewardIndex
-                    }
-                    
-                    -- Invoke the remote function
-                    pcall(function()
-                        game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Function:InvokeServer(unpack(args))
-                    end)
-                    
-                    -- Small delay between each claim to prevent overloading
-                    task.wait(0.2)
-                end
-                
-                -- Wait 25 seconds before claiming again
-                task.wait(25)
+                -- Claim all playtime rewards
+                local args = {
+                    [1] = "ClaimAllPlaytime"
+                }
+
+                game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
+
+                -- Wait 20 seconds before claiming again
+                task.wait(20)
             end
         end)
     else
         -- Stop auto claiming
         if autoClaimPlaytimeLoop then
-            autoClaimPlaytimeLoop:Cancel()
+            task.cancel(autoClaimPlaytimeLoop)
             autoClaimPlaytimeLoop = nil
         end
     end
 end)
+
 
 -- Add toggles for wheel spin functionality
 local AutoClaimWheelSpinToggle = PlaytimeSection:AddToggle("AutoClaimWheelSpin", {
@@ -2598,7 +2913,7 @@ AutoClaimWheelSpinToggle:OnChanged(function(value)
                 
                 -- Fire the remote event
                 pcall(function()
-                    game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.Event:FireServer(unpack(args))
+                    game:GetService("ReplicatedStorage").Shared.Framework.Network.Remote.RemoteEvent:FireServer(unpack(args))
                 end)
                 
                 -- Wait 5 seconds before claiming again
